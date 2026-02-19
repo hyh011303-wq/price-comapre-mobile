@@ -17,16 +17,33 @@ class PriceCompareMobile:
         self.page.title = "측기 가격비교"
         self.page.theme_mode = ft.ThemeMode.DARK
         self.page.padding = 0
-        self.page.window.width = 400
-        self.page.window.height = 800
         self.page.bgcolor = BG_COLOR
         
-        self.db = DatabaseManager("prices_mobile.db")
-        self.scraper = PriceScraper()
-        self.analyzer = SiteAnalyzer()
-        
-        self.last_searched = None
-        self.setup_ui()
+        # Robust initialization
+        try:
+            # On Android, relative path might be tricky, but usually works in app dir.
+            # Using a simple try-except to catch DB errors.
+            self.db = DatabaseManager("prices_mobile.db")
+            self.scraper = PriceScraper()
+            self.analyzer = SiteAnalyzer()
+            self.last_searched = None
+            self.setup_ui()
+        except Exception as e:
+            self.show_critical_error(str(e))
+
+    def show_critical_error(self, error_msg):
+        self.page.add(
+            ft.Container(
+                content=ft.Column([
+                    ft.Icon(ft.Icons.ERROR_OUTLINE, color=ft.Colors.RED_400, size=50),
+                    ft.Text("앱 초기화 중 오류가 발생했습니다:", weight="bold"),
+                    ft.Text(error_msg, color=ft.Colors.RED_200, selectable=True),
+                    ft.ElevatedButton("다시 시도", on_click=lambda _: self.page.window_reload())
+                ], horizontal_alignment=ft.CrossAxisAlignment.CENTER),
+                alignment=ft.alignment.center,
+                expand=True
+            )
+        )
 
     def setup_ui(self):
         # Navigation Bar
@@ -108,20 +125,22 @@ class PriceCompareMobile:
         self.page.update()
 
     def load_sites(self):
-        sites = self.db.get_sites()
-        self.site_list.controls.clear()
-        for site in sites:
-            self.site_list.controls.append(
-                ft.Card(
-                    content=ft.ListTile(
-                        leading=ft.Icon(ft.Icons.STORE),
-                        title=ft.Text(site[1]),
-                        subtitle=ft.Text(site[2]),
-                        trailing=ft.IconButton(ft.Icons.DELETE, on_click=lambda x, sid=site[0]: self.delete_site(sid))
+        try:
+            sites = self.db.get_sites()
+            self.site_list.controls.clear()
+            for site in sites:
+                self.site_list.controls.append(
+                    ft.Card(
+                        content=ft.ListTile(
+                            leading=ft.Icon(ft.Icons.STORE),
+                            title=ft.Text(site[1]),
+                            subtitle=ft.Text(site[2]),
+                            trailing=ft.IconButton(ft.Icons.DELETE, on_click=lambda x, sid=site[0]: self.delete_site(sid))
+                        )
                     )
                 )
-            )
-        self.page.update()
+            self.page.update()
+        except: pass
 
     def delete_site(self, sid):
         self.db.delete_site(sid)
@@ -171,12 +190,14 @@ class PriceCompareMobile:
                     )
             self.page.update()
         
-        Clock = asyncio.run_coroutine_threadsafe if asyncio.iscoroutinefunction(update_ui) else self.page.run_task(update_ui)
+        self.page.run_threadsafe(update_ui)
 
     def load_products(self):
-        products = self.db.get_all_products()
-        self.product_dropdown.options = [ft.dropdown.Option(name) for pid, name in products]
-        self.page.update()
+        try:
+            products = self.db.get_all_products()
+            self.product_dropdown.options = [ft.dropdown.Option(name) for pid, name in products]
+            self.page.update()
+        except: pass
 
     def on_product_select(self, e):
         name = self.product_dropdown.value
@@ -196,17 +217,21 @@ class PriceCompareMobile:
         # Simple LineChart implementation
         sites_data = {}
         for price, date_str, site_name in history:
-            dt = datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
-            if site_name not in sites_data: sites_data[site_name] = []
-            sites_data[site_name].append((dt.timestamp(), price))
+            try:
+                dt = datetime.datetime.strptime(date_str, "%Y-%m-%d %H:%M:%S")
+                if site_name not in sites_data: sites_data[site_name] = []
+                sites_data[site_name].append((dt.timestamp(), price))
+            except: continue
 
         data_series = []
-        for site, points in sites_data.items():
+        colors = [ft.Colors.BLUE, ft.Colors.RED, ft.Colors.GREEN, ft.Colors.AMBER, ft.Colors.PURPLE]
+        for i, (site, points) in enumerate(sites_data.items()):
+            color = colors[i % len(colors)]
             data_series.append(
                 ft.LineChartData(
                     data_points=[ft.LineChartDataPoint(p[0], p[1]) for p in points],
                     stroke_width=2,
-                    color=ft.Colors.random(),
+                    color=color,
                     curved=True,
                     marker_size=6
                 )
@@ -245,4 +270,6 @@ class PriceCompareMobile:
         self.page.update()
 
 if __name__ == "__main__":
-    ft.app(target=PriceCompareMobile)
+    def main(page: ft.Page):
+        PriceCompareMobile(page)
+    ft.app(target=main)
