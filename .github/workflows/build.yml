@@ -21,7 +21,7 @@ jobs:
           channel: 'stable'
       - name: Build APK
         run: |
-          flet build apk
+          flet build apk --no-interaction
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
