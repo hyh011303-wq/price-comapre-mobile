@@ -7,7 +7,7 @@ from scraper import PriceScraper
 from auto_discovery import SiteAnalyzer
 
 # Colors
-PRIMARY = ft.colors.INDIGO_400
+PRIMARY = ft.Colors.INDIGO_400
 BG_COLOR = "#121212"
 CARD_BG = "#1E1E1E"
 
@@ -34,9 +34,9 @@ class PriceCompareMobile:
             selected_index=0,
             animation_duration=300,
             tabs=[
-                ft.Tab(text="상품검색", icon=ft.icons.SEARCH),
-                ft.Tab(text="가격추이", icon=ft.icons.SHOW_CHART),
-                ft.Tab(text="쇼핑몰 설정", icon=ft.icons.SETTINGS),
+                ft.Tab(text="상품검색", icon=ft.Icons.SEARCH),
+                ft.Tab(text="가격추이", icon=ft.Icons.SHOW_CHART),
+                ft.Tab(text="쇼핑몰 설정", icon=ft.Icons.SETTINGS),
             ],
             expand=1,
             on_change=self.on_tab_change
@@ -52,7 +52,7 @@ class PriceCompareMobile:
         self.search_results = ft.ListView(expand=True, spacing=10, padding=10)
         self.search_view = ft.Column([
             ft.Container(
-                content=ft.Row([self.search_input, ft.IconButton(icon=ft.icons.SEARCH, on_click=self.start_search)]),
+                content=ft.Row([self.search_input, ft.IconButton(icon=ft.Icons.SEARCH, on_click=self.start_search)]),
                 padding=10
             ),
             self.search_results
@@ -75,13 +75,13 @@ class PriceCompareMobile:
         self.settings_view = ft.Column([
             ft.Container(content=ft.Text("쇼핑몰 관리", size=20, weight="bold"), padding=10),
             self.site_list,
-            ft.FloatingActionButton(icon=ft.icons.ADD, on_click=self.show_add_site_dialog)
+            ft.FloatingActionButton(icon=ft.Icons.ADD, on_click=self.show_add_site_dialog)
         ], visible=False)
 
         self.page.add(
             ft.AppBar(
                 title=ft.Text("Price Smart Mobile", weight="bold"),
-                bgcolor=ft.colors.SURFACE_VARIANT,
+                bgcolor=ft.Colors.SURFACE_VARIANT,
                 center_title=True,
             ),
             ft.Container(
@@ -114,10 +114,10 @@ class PriceCompareMobile:
             self.site_list.controls.append(
                 ft.Card(
                     content=ft.ListTile(
-                        leading=ft.Icon(ft.icons.STORE),
+                        leading=ft.Icon(ft.Icons.STORE),
                         title=ft.Text(site[1]),
                         subtitle=ft.Text(site[2]),
-                        trailing=ft.IconButton(ft.icons.DELETE, on_click=lambda x, sid=site[0]: self.delete_site(sid))
+                        trailing=ft.IconButton(ft.Icons.DELETE, on_click=lambda x, sid=site[0]: self.delete_site(sid))
                     )
                 )
             )
@@ -161,7 +161,7 @@ class PriceCompareMobile:
                                     ft.ListTile(
                                         title=ft.Text(r['product_title'], max_lines=2, weight="bold"),
                                         subtitle=ft.Text(r['site_name']),
-                                        trailing=ft.Text(f"{r['price']:,.0f}원", size=18, color=ft.colors.AMBER_400, weight="bold")
+                                        trailing=ft.Text(f"{r['price']:,.0f}원", size=18, color=ft.Colors.AMBER_400, weight="bold")
                                     ),
                                     ft.TextButton("사이트 방문", on_click=lambda x, url=r['url']: self.page.launch_url(url))
                                 ], spacing=0),
@@ -206,7 +206,7 @@ class PriceCompareMobile:
                 ft.LineChartData(
                     data_points=[ft.LineChartDataPoint(p[0], p[1]) for p in points],
                     stroke_width=2,
-                    color=ft.colors.random(),
+                    color=ft.Colors.random(),
                     curved=True,
                     marker_size=6
                 )
@@ -214,9 +214,9 @@ class PriceCompareMobile:
 
         self.chart_container.content = ft.LineChart(
             data_series=data_series,
-            border=ft.border.all(1, ft.colors.with_opacity(0.1, ft.colors.ON_SURFACE)),
-            horizontal_grid_lines=ft.ChartGridLines(interval=10000, width=1, color=ft.colors.with_opacity(0.1, ft.colors.ON_SURFACE)),
-            tooltip_bgcolor=ft.colors.with_opacity(0.8, ft.colors.BLUE_GREY_900),
+            border=ft.border.all(1, ft.Colors.with_opacity(0.1, ft.Colors.ON_SURFACE)),
+            horizontal_grid_lines=ft.ChartGridLines(interval=10000, width=1, color=ft.Colors.with_opacity(0.1, ft.Colors.ON_SURFACE)),
+            tooltip_bgcolor=ft.Colors.with_opacity(0.8, ft.Colors.BLUE_GREY_900),
             expand=True
         )
         self.page.update()
