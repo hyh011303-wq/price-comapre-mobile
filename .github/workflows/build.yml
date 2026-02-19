@@ -12,16 +12,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install Dependencies
-        run: |
-          pip install flet requests beautifulsoup4 urllib3 certifi
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
+          flutter-version: '3.24.0' # 버전 고정으로 질문 방지
           channel: 'stable'
+      - name: Install Dependencies
+        run: |
+          pip install flet requests beautifulsoup4 urllib3 certifi
       - name: Build APK
         run: |
-          flet build apk --no-interaction
+          # yes 명령어를 사용하여 모든 질문에 자동으로 'y'라고 대답합니다.
+          yes | flet build apk
+          
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
